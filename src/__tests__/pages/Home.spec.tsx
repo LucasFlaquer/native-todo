@@ -1,7 +1,9 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-
+import { Alert } from 'react-native'
 import { Home } from '../../pages/Home';
+
+jest.spyOn(Alert, 'alert')
 
 describe('Home', () => {
   it('should be able to render new added tasks', () => {
@@ -12,7 +14,7 @@ describe('Home', () => {
 
     fireEvent.changeText(inputElement, 'Primeira tarefa');
     fireEvent(inputElement, 'submitEditing');
-    
+
     expect(getByText('Primeira tarefa'));
     expect(getByText('1 tarefa'));
 
@@ -33,7 +35,7 @@ describe('Home', () => {
 
     const buttonElement = getByTestId('button-0');
     const markerElement = getByTestId('marker-0');
-    
+
     const taskElement = getByText('Primeira tarefa');
 
     expect(buttonElement).toHaveStyle({
@@ -74,7 +76,7 @@ describe('Home', () => {
 
     fireEvent.changeText(inputElement, 'Primeira tarefa');
     fireEvent(inputElement, 'submitEditing');
-    
+
     fireEvent.changeText(inputElement, 'Segunda tarefa');
     fireEvent(inputElement, 'submitEditing');
 
@@ -86,4 +88,15 @@ describe('Home', () => {
     expect(getByText('Segunda tarefa'));
     expect(getByText('1 tarefa'));
   });
+  it('should not be able to add todo that already exists', () => {
+    const { getByPlaceholderText, getByText } = render(<Home />);
+    const inputElement = getByPlaceholderText('Adicionar novo todo...');
+    expect(getByText('0 tarefas'));
+    fireEvent.changeText(inputElement, 'Primeira tarefa');
+    fireEvent(inputElement, 'submitEditing');
+    fireEvent.changeText(inputElement, 'Primeira tarefa');
+    fireEvent(inputElement, 'submitEditing');
+    expect(Alert.alert).toHaveBeenCalledWith('Task já cadastrada', 'Você não pode cadastrar uma task com o mesmo nome');
+    expect(getByText('1 tarefa'));
+  })
 })
